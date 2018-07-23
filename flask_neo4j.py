@@ -3,7 +3,8 @@ from future.builtins import object
 
 import time
 import logging
-from py2neo import authenticate, Graph,Node
+#from py2neo import authenticate, Graph,Node
+from py2neo import Graph,Node
 from py2neo.packages.httpstream.http import SocketError
 
 # Support for py2neo v3
@@ -113,6 +114,8 @@ class Neo4j(object):
 
             host_port = ''
             host_database = self.app.config['GRAPH_DATABASE']
+            neo_user = self.app.config['GRAPH_USER']
+            neo_pass = self.app.config['GRAPH_PASSWORD']
             host_port_idx = host_database.find('://')
             if host_port_idx >= 0:
                 # extract the host and port from the host_database
@@ -120,12 +123,14 @@ class Neo4j(object):
                 host_port = host_database[host_port_idx:]
                 host_port = host_port[:host_port.find('/')]
 
-            authenticate(
-                host_port,
-                self.app.config['GRAPH_USER'],
-                self.app.config['GRAPH_PASSWORD']
-            )
-            self.graph_db = Graph(host_database)
+            #authenticate(
+            #    host_port,
+            #    self.app.config['GRAPH_USER'],
+            #    self.app.config['GRAPH_PASSWORD']
+            #)
+            #v4:
+            #"bolt://myserver:7687", auth=("neo4j", "psswrd")
+            self.graph_db = Graph(host_database, auth=(neo_user, neo_pass))
         except SocketError as se:
             log.error('SocketError: {0}'.format(se.message))
             if retry:
@@ -137,7 +142,7 @@ class Neo4j(object):
                     #time.sleep(1)
                     retry_count += 1
                     try:
-                        self.graph_db = Graph(self.app.config['GRAPH_DATABASE'])
+                        self.graph_db = Graph(self.app.config['GRAPH_DATABASE'], auth=(self.app.config['GRAPH_USER'],self.app.config['GRAPH_PASSWORD']))
                     except SocketError as sse:
                         log.error('SocketError: {0}'.format(sse.message))
 
@@ -184,9 +189,9 @@ if __name__ == '__main__':
     app = Flask(__name__)
     app.config['GRAPH_USER'] = 'neo4j'
     app.config['GRAPH_PASSWORD'] = 'admin'
-    authenticate(
-        'localhost:7474', app.config['GRAPH_USER'], app.config['GRAPH_PASSWORD']
-    )
+    #authenticate(
+    #    'localhost:7474', app.config['GRAPH_USER'], app.config['GRAPH_PASSWORD']
+    #)
     app.config['GRAPH_DATABASE'] = 'http://localhost:7474/db/data/'
     graph_indexes = {'Species': Node}
     flask4j = Neo4j(app, graph_indexes)
