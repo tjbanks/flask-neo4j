@@ -5,7 +5,7 @@ import time
 import logging
 #from py2neo import authenticate, Graph,Node
 from py2neo import Graph,Node
-from py2neo.packages.httpstream.http import SocketError
+#from py2neo.packages.httpstream.http import SocketError
 
 # Support for py2neo v3
 try:
@@ -131,7 +131,7 @@ class Neo4j(object):
             #v4:
             #"bolt://myserver:7687", auth=("neo4j", "psswrd")
             self.graph_db = Graph(host_database, auth=(neo_user, neo_pass))
-        except SocketError as se:
+        except Exception as se:
             log.error('SocketError: {0}'.format(se.message))
             if retry:
                 while retry_count < 3:
@@ -143,7 +143,7 @@ class Neo4j(object):
                     retry_count += 1
                     try:
                         self.graph_db = Graph(self.app.config['GRAPH_DATABASE'], auth=(self.app.config['GRAPH_USER'],self.app.config['GRAPH_PASSWORD']))
-                    except SocketError as sse:
+                    except Exception as sse:
                         log.error('SocketError: {0}'.format(sse.message))
 
         if not hasattr(self, 'index'):
