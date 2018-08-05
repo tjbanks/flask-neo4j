@@ -113,9 +113,9 @@ class Neo4j(object):
             print("flask.ext.Neo4j gdb trying to connect to DB")
 
             host_port = ''
-            host_database = self.app.config['GRAPH_DATABASE']
-            neo_user = self.app.config['GRAPH_USER']
-            neo_pass = self.app.config['GRAPH_PASSWORD']
+            host_database = os.environ.get('GRAPH_DATABASE')
+            neo_user = os.environ.get('GRAPH_USER')
+            neo_pass = os.environ.get('GRAPH_PASSWORD')
             host_port_idx = host_database.find('://')
             if host_port_idx >= 0:
                 # extract the host and port from the host_database
@@ -142,7 +142,7 @@ class Neo4j(object):
                     #time.sleep(1)
                     retry_count += 1
                     try:
-                        self.graph_db = Graph(self.app.config['GRAPH_DATABASE'], auth=(self.app.config['GRAPH_USER'],self.app.config['GRAPH_PASSWORD']))
+                        self.graph_db = Graph(os.environ.get('GRAPH_DATABASE'), auth=(os.environ.get('GRAPH_USER'),os.environ.get('GRAPH_PASSWORD')))
                     except Exception as sse:
                         log.error('SocketError: {0}'.format(sse.message))
 
