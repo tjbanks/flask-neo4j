@@ -5,7 +5,8 @@ import os
 import time
 import logging
 #from py2neo import authenticate, Graph,Node
-from py2neo import Graph,Node
+from py2neo.database import Graph
+from py2neo import Node
 #from py2neo.packages.httpstream.http import SocketError
 
 # Support for py2neo v3
@@ -111,19 +112,21 @@ class Neo4j(object):
             retry_interval = self.app.config['RETRY_INTERVAL']
         retry_count = 0
         try:
-            print("flask.ext.Neo4j gdb trying to connect to DB")
-
+            log.info("flask.ext.Neo4j gdb trying to connect to DB")
             host_port = ''
-            host_database = os.environ.get('GRAPH_DATABASE')
-            neo_user = os.environ.get('GRAPH_USER')
-            neo_pass = os.environ.get('GRAPH_PASSWORD')
+            host_database = self.app.config['GRAPH_DATABASE']
+            neo_user = self.app.config['GRAPH_USER']
+            neo_pass = self.app.config['GRAPH_PASSWORD']
+            
             host_port_idx = host_database.find('://')
             if host_port_idx >= 0:
                 # extract the host and port from the host_database
                 host_port_idx = host_port_idx + 3
                 host_port = host_database[host_port_idx:]
                 host_port = host_port[:host_port.find('/')]
-
+        except Exception as e:
+            log.error("Error with database parameters, they may not have been specified in your config: {}".format(e))
+        try:
             #authenticate(
             #    host_port,
             #    self.app.config['GRAPH_USER'],
@@ -143,7 +146,7 @@ class Neo4j(object):
                     #time.sleep(1)
                     retry_count += 1
                     try:
-                        self.graph_db = Graph(os.environ.get('GRAPH_DATABASE'), auth=(os.environ.get('GRAPH_USER'),os.environ.get('GRAPH_PASSWORD')))
+                        self.graph_db = Graph(host_database, auth=(neo_user,neo_pass))
                     except Exception as sse:
                         log.error('SocketError: {0}'.format(sse.message))
 
