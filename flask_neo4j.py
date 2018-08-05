@@ -132,7 +132,7 @@ class Neo4j(object):
             #"bolt://myserver:7687", auth=("neo4j", "psswrd")
             self.graph_db = Graph(host_database, auth=(neo_user, neo_pass))
         except Exception as se:
-            log.error('SocketError: {0}'.format(se.message))
+            log.error('SocketError: {0}'.format(se))
             if retry:
                 while retry_count < 3:
                     log.debug('Waiting {0}secs before Connection Retry to GraphDatabaseService'.format(
